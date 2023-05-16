@@ -20,7 +20,7 @@ var reputations;
   ]
 }*/
 
-var stepSize = 10;
+var stepSize = 50;
 var stepTime = 1000;
 var min = 0;
 var max = min + stepSize;
@@ -29,13 +29,19 @@ var nodesCreated = [];
 var nodes = [];
 var links = [];
 var linkMap = {};
-var initialized = false;
 
 function createNode (node) {
-  if (nodesCreated[node]) return;
+  if (nodesCreated[node]) {
+    for (var i = 0; i < nodes.length; i++) {
+      if (nodes[i].id == node) {
+        nodes[i].r = nodes[i].r + 1;
+      }
+    }
+    return;
+  }
   nodesCreated[node] = true;
   
-  var datanode = { id: node, group: 1, x: 500, y: 500};
+  var datanode = { id: node, group: 1, x: 500, y: 500, r: 2};
   nodes.push(datanode);
 }
 
@@ -46,7 +52,7 @@ function createLink (n1, n2, weight) {
     n1 = temp;
   }
   
-  return false;
+  //return false;
   //if (n1 !== 1529 && n2 !== 1529) return false;
   
   if (!linkMap[n1]) linkMap[n1] = {};
@@ -238,9 +244,11 @@ function initializeDisplay() {
 function updateDisplay() {
     allNodesSVG
     .selectAll("circle")
-        .attr("r", forceProperties.collide.radius)
+        //.attr("r", forceProperties.collide.radius)
+        .attr("r", 1)
         .attr("stroke", forceProperties.charge.strength > 0 ? "blue" : "red")
-        .attr("stroke-width", forceProperties.charge.enabled==false ? 0 : Math.abs(forceProperties.charge.strength)/15);
+        //.attr("stroke-width", forceProperties.charge.enabled==false ? 0 : Math.abs(forceProperties.charge.strength)/15);
+        .attr("stroke-width", 0);
 
     allLinksSVG
     .selectAll("line")
@@ -260,7 +268,9 @@ function ticked() {
     allNodesSVG
     .selectAll("circle")
         .attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
+        .attr("cy", function(d) { return d.y; })
+        .attr("r", function (d) { return Math.log(d.r); });
+
     d3.select('#alpha_value').style('flex-basis', (simulation.alpha()*100) + '%');
 }
 
